@@ -6,6 +6,8 @@
 */
 
 #include <triton/astDictionaries.hpp>
+#include <triton/symbolicExpression.hpp>
+#include <triton/symbolicVariable.hpp>
 
 
 
@@ -45,11 +47,9 @@ namespace triton {
       this->backupFlag                  = true;
 
       /* Dictionnaries */
-      this->assertDictionary            = other.assertDictionary;
       this->bvaddDictionary             = other.bvaddDictionary;
       this->bvandDictionary             = other.bvandDictionary;
       this->bvashrDictionary            = other.bvashrDictionary;
-      this->bvdeclDictionary            = other.bvdeclDictionary;
       this->bvlshrDictionary            = other.bvlshrDictionary;
       this->bvmulDictionary             = other.bvmulDictionary;
       this->bvnandDictionary            = other.bvnandDictionary;
@@ -77,10 +77,8 @@ namespace triton {
       this->bvxnorDictionary            = other.bvxnorDictionary;
       this->bvxorDictionary             = other.bvxorDictionary;
       this->bvDictionary                = other.bvDictionary;
-      this->compoundDictionary          = other.compoundDictionary;
       this->concatDictionary            = other.concatDictionary;
       this->decimalDictionary           = other.decimalDictionary;
-      this->declareFunctionDictionary   = other.declareFunctionDictionary;
       this->distinctDictionary          = other.distinctDictionary;
       this->equalDictionary             = other.equalDictionary;
       this->extractDictionary           = other.extractDictionary;
@@ -100,11 +98,9 @@ namespace triton {
 
 
     void AstDictionaries::linkDictionaries(void) {
-      this->dictionaries[triton::ast::ASSERT_NODE]             = &this->assertDictionary;
       this->dictionaries[triton::ast::BVADD_NODE]              = &this->bvaddDictionary;
       this->dictionaries[triton::ast::BVAND_NODE]              = &this->bvandDictionary;
       this->dictionaries[triton::ast::BVASHR_NODE]             = &this->bvashrDictionary;
-      this->dictionaries[triton::ast::BVDECL_NODE]             = &this->bvdeclDictionary;
       this->dictionaries[triton::ast::BVLSHR_NODE]             = &this->bvlshrDictionary;
       this->dictionaries[triton::ast::BVMUL_NODE]              = &this->bvmulDictionary;
       this->dictionaries[triton::ast::BVNAND_NODE]             = &this->bvnandDictionary;
@@ -132,10 +128,8 @@ namespace triton {
       this->dictionaries[triton::ast::BVXNOR_NODE]             = &this->bvxnorDictionary;
       this->dictionaries[triton::ast::BVXOR_NODE]              = &this->bvxorDictionary;
       this->dictionaries[triton::ast::BV_NODE]                 = &this->bvDictionary;
-      this->dictionaries[triton::ast::COMPOUND_NODE]           = &this->compoundDictionary;
       this->dictionaries[triton::ast::CONCAT_NODE]             = &this->concatDictionary;
       this->dictionaries[triton::ast::DECIMAL_NODE]            = &this->decimalDictionary;
-      this->dictionaries[triton::ast::DECLARE_FUNCTION_NODE]   = &this->declareFunctionDictionary;
       this->dictionaries[triton::ast::DISTINCT_NODE]           = &this->distinctDictionary;
       this->dictionaries[triton::ast::EQUAL_NODE]              = &this->equalDictionary;
       this->dictionaries[triton::ast::EXTRACT_NODE]            = &this->extractDictionary;
@@ -170,7 +164,7 @@ namespace triton {
         }
 
         case triton::ast::REFERENCE_NODE: {
-          auto value       = static_cast<triton::ast::ReferenceNode*>(node)->getValue();
+          auto value       = static_cast<triton::ast::ReferenceNode*>(node)->getSymbolicExpression().getId();
           auto dictionary  = static_cast<std::map<triton::usize, triton::ast::AbstractNode*>*>((this->dictionaries[kind]));
           if (dictionary->find(value) != dictionary->end()) {
             delete node;
@@ -192,7 +186,7 @@ namespace triton {
         }
 
         case triton::ast::VARIABLE_NODE: {
-          auto value       = static_cast<triton::ast::VariableNode*>(node)->getValue();
+          auto value       = static_cast<triton::ast::VariableNode*>(node)->getVar().getName();
           auto dictionary  = static_cast<std::map<std::string, triton::ast::AbstractNode*>*>((this->dictionaries[kind]));
           if (dictionary->find(value) != dictionary->end()) {
             delete node;
@@ -203,7 +197,7 @@ namespace triton {
         }
 
         default: {
-          auto value       = node->getChilds();
+          auto value       = node->getChildren();
           auto dictionary  = static_cast<std::map<std::vector<triton::ast::AbstractNode*>, triton::ast::AbstractNode*>*>((this->dictionaries[kind]));
           if (dictionary->find(value) != dictionary->end()) {
             delete node;
@@ -222,11 +216,9 @@ namespace triton {
 
     std::map<std::string, triton::usize> AstDictionaries::getAstDictionariesStats(void) const {
       std::map<std::string, triton::usize> stats;
-      stats["assert"]                 = this->assertDictionary.size();
       stats["bvadd"]                  = this->bvaddDictionary.size();
       stats["bvand"]                  = this->bvandDictionary.size();
       stats["bvashr"]                 = this->bvashrDictionary.size();
-      stats["bvdecl"]                 = this->bvdeclDictionary.size();
       stats["bvlshr"]                 = this->bvlshrDictionary.size();
       stats["bvmul"]                  = this->bvmulDictionary.size();
       stats["bvnand"]                 = this->bvnandDictionary.size();
@@ -254,10 +246,8 @@ namespace triton {
       stats["bvxnor"]                 = this->bvxnorDictionary.size();
       stats["bvxor"]                  = this->bvxorDictionary.size();
       stats["bv"]                     = this->bvDictionary.size();
-      stats["compound"]               = this->compoundDictionary.size();
       stats["concat"]                 = this->concatDictionary.size();
       stats["decimal"]                = this->decimalDictionary.size();
-      stats["declareFunction"]        = this->declareFunctionDictionary.size();
       stats["distinct"]               = this->distinctDictionary.size();
       stats["equal"]                  = this->equalDictionary.size();
       stats["extract"]                = this->extractDictionary.size();

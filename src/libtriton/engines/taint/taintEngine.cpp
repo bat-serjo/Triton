@@ -112,12 +112,13 @@ namespace triton {
   namespace engines {
     namespace taint {
 
-      TaintEngine::TaintEngine(triton::engines::symbolic::SymbolicEngine* symbolicEngine) {
-        if (symbolicEngine == nullptr)
-          throw triton::exceptions::TaintEngine("TaintEngine::TaintEngine(): The symbolicEngine TaintEngine cannot be null.");
+      TaintEngine::TaintEngine(triton::engines::symbolic::SymbolicEngine* symbolicEngine, const triton::arch::CpuInterface& cpu)
+        : symbolicEngine(symbolicEngine),
+          cpu(cpu),
+          enableFlag(true) {
 
-        this->symbolicEngine = symbolicEngine;
-        this->enableFlag     = true;
+        if (this->symbolicEngine == nullptr)
+          throw triton::exceptions::TaintEngine("TaintEngine::TaintEngine(): The symbolicEngine TaintEngine cannot be null.");
       }
 
 
@@ -129,16 +130,13 @@ namespace triton {
       }
 
 
-      TaintEngine::TaintEngine(const TaintEngine& other) {
+      TaintEngine::TaintEngine(const TaintEngine& other) : cpu(other.cpu) {
         this->copy(other);
       }
 
 
-      TaintEngine::~TaintEngine() {
-      }
-
-
       void TaintEngine::operator=(const TaintEngine& other) {
+        // We assume the cpu didn't change
         this->copy(other);
       }
 
@@ -160,8 +158,13 @@ namespace triton {
 
 
       /* Returns the tainted registers */
-      const std::set<triton::arch::Register>& TaintEngine::getTaintedRegisters(void) const {
-        return this->taintedRegisters;
+      std::set<const triton::arch::Register*> TaintEngine::getTaintedRegisters(void) const {
+        std::set<const triton::arch::Register*> res;
+
+        for (auto id : this->taintedRegisters)
+          res.insert(&this->cpu.getRegister(id));
+
+        return res;
       }
 
 
@@ -192,9 +195,7 @@ namespace triton {
 
       /* Returns true of false if the register is currently tainted */
       bool TaintEngine::isRegisterTainted(const triton::arch::Register& reg) const {
-        triton::arch::Register parent = reg.getParent();
-
-        if (this->taintedRegisters.find(parent) != this->taintedRegisters.end())
+        if (this->taintedRegisters.find(reg.getParent()) != this->taintedRegisters.end())
           return TAINTED;
 
         return !TAINTED;
@@ -215,11 +216,9 @@ namespace triton {
 
       /* Taint the register */
       bool TaintEngine::taintRegister(const triton::arch::Register& reg) {
-        triton::arch::Register parent = reg.getParent();
-
         if (!this->isEnabled())
-          return this->isRegisterTainted(parent);
-        this->taintedRegisters.insert(parent);
+          return this->isRegisterTainted(reg);
+        this->taintedRegisters.insert(reg.getParent());
 
         return TAINTED;
       }
@@ -227,11 +226,9 @@ namespace triton {
 
       /* Untaint the register */
       bool TaintEngine::untaintRegister(const triton::arch::Register& reg) {
-        triton::arch::Register parent = reg.getParent();
-
         if (!this->isEnabled())
-          return this->isRegisterTainted(parent);
-        this->taintedRegisters.erase(parent);
+          return this->isRegisterTainted(reg);
+        this->taintedRegisters.erase(reg.getParent());
 
         return !TAINTED;
       }
@@ -266,16 +263,14 @@ namespace triton {
 
       /* Sets the flag (taint or untaint) to a register. */
       bool TaintEngine::setTaintRegister(const triton::arch::Register& reg, bool flag) {
-        triton::arch::Register parent = reg.getParent();
-
         if (!this->isEnabled())
-          return this->isRegisterTainted(parent);
+          return this->isRegisterTainted(reg);
 
         if (flag == TAINTED)
-          this->taintRegister(parent);
+          this->taintRegister(reg);
 
         else if (flag == !TAINTED)
-          this->untaintRegister(parent);
+          this->untaintRegister(reg);
 
         return flag;
       }

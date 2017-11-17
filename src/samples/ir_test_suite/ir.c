@@ -125,6 +125,61 @@ void check(void)
   asm("mov rcx, 3");
   asm("rep movsq");
 
+  asm("mov rdi, %0" :: "r"(tab2));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 0");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab2));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 5");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab3));
+  asm("mov rsi, %0" :: "r"(tab1));
+  asm("mov rcx, 5");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab1));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 0");
+  asm("rep cmpsb");
+
+  asm("mov rdi, %0" :: "r"(tab2));
+  asm("mov rsi, %0" :: "r"(tab3));
+  asm("mov rcx, 0");
+  asm("rep cmpsd");
+
+  asm("mov rdi, %0" :: "r"(tab2));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 0");
+  asm("rep cmpsq");
+
+  asm("mov rdi, %0" :: "r"(tab2));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 0");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab3));
+  asm("mov rsi, %0" :: "r"(tab1));
+  asm("mov rcx, 4");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab3));
+  asm("mov rsi, %0" :: "r"(tab1));
+  asm("mov rcx, 4");
+  asm("rep cmpsb");
+
+  asm("mov rdi, %0" :: "r"(tab1));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 4");
+  asm("rep movsq");
+
+  asm("mov rdi, %0" :: "r"(tab1));
+  asm("mov rsi, %0" :: "r"(tab2));
+  asm("mov rcx, 0");
+  asm("rep cmpsb");
+
   asm("mov rax, -1");
   asm("xor al, 0x99");
   asm("xor ax, 0x99");
@@ -202,6 +257,9 @@ void check(void)
   asm("mov rax, 0x0");
   asm("tzcnt rbx, rax");
   asm("mov rax, 0x8000000000000000");
+  asm("tzcnt rbx, rax");
+  asm("mov rax, 0xffffffffffffffff");
+  asm("mov rbx, 0x0");
   asm("tzcnt rbx, rax");
 
   asm("mov rax, 0x0");

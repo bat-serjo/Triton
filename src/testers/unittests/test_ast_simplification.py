@@ -4,9 +4,7 @@
 
 import unittest
 
-from triton     import *
-from triton.ast import *
-
+from triton import ARCH, TritonContext, CALLBACK, AST_NODE
 
 
 class TestAstSimplification(unittest.TestCase):
@@ -14,59 +12,61 @@ class TestAstSimplification(unittest.TestCase):
     """Testing AST simplification."""
 
     def setUp(self):
-        setArchitecture(ARCH.X86_64)
-        addCallback(self.xor_1, CALLBACK.SYMBOLIC_SIMPLIFICATION)
-        addCallback(self.xor_2, CALLBACK.SYMBOLIC_SIMPLIFICATION)
+        self.Triton = TritonContext()
+        self.Triton.setArchitecture(ARCH.X86_64)
+        self.Triton.addCallback(self.xor_1, CALLBACK.SYMBOLIC_SIMPLIFICATION)
+        self.Triton.addCallback(self.xor_2, CALLBACK.SYMBOLIC_SIMPLIFICATION)
+        self.astCtxt = self.Triton.getAstContext()
 
     def test_simplification(self):
-        a = bv(1, 8)
-        b = bv(2, 8)
+        a = self.astCtxt.bv(1, 8)
+        b = self.astCtxt.bv(2, 8)
 
         # Example 1
         c = a ^ a
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(_ bv0 8)")
 
         c = a ^ b
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(bvxor (_ bv1 8) (_ bv2 8))")
 
         c = (a & ~b) | (~a & b)
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(bvxor (_ bv1 8) (_ bv2 8))")
 
         # Example 2 - forme B
         c = (~b & a) | (~a & b)
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(bvxor (_ bv1 8) (_ bv2 8))")
 
         # Example 2 - forme C
         c = (~b & a) | (b & ~a)
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(bvxor (_ bv1 8) (_ bv2 8))")
 
         # Example 2 - forme D
         c = (b & ~a) | (~b & a)
-        c = simplify(c)
+        c = self.Triton.simplify(c)
         self.assertEqual(str(c), "(bvxor (_ bv2 8) (_ bv1 8))")
         return
 
     # a ^ a -> a = 0
     @staticmethod
-    def xor_1(node):
+    def xor_1(api, node):
         if node.getKind() == AST_NODE.BVXOR:
-            if node.getChilds()[0].equalTo(node.getChilds()[1]):
-                return bv(0, node.getBitvectorSize())
+            if node.getChildren()[0].equalTo(node.getChildren()[1]):
+                return api.getAstContext().bv(0, node.getBitvectorSize())
         return node
 
 
     # ((a & ~b) | (~a & b)) -> (a ^ b)
     @staticmethod
-    def xor_2(node):
+    def xor_2(api, node):
 
         def getNot(node):
-            a = node.getChilds()[0]
-            b = node.getChilds()[1]
+            a = node.getChildren()[0]
+            b = node.getChildren()[1]
             if a.getKind() == AST_NODE.BVNOT and b.getKind() != AST_NODE.BVNOT:
                 return a
             if b.getKind() == AST_NODE.BVNOT and a.getKind() != AST_NODE.BVNOT:
@@ -74,8 +74,8 @@ class TestAstSimplification(unittest.TestCase):
             return None
 
         def getNonNot(node):
-            a = node.getChilds()[0]
-            b = node.getChilds()[1]
+            a = node.getChildren()[0]
+            b = node.getChildren()[1]
             if a.getKind() != AST_NODE.BVNOT and b.getKind() == AST_NODE.BVNOT:
                 return a
             if b.getKind() != AST_NODE.BVNOT and a.getKind() == AST_NODE.BVNOT:
@@ -83,8 +83,8 @@ class TestAstSimplification(unittest.TestCase):
             return None
 
         if node.getKind() == AST_NODE.BVOR:
-            c1 = node.getChilds()[0]
-            c2 = node.getChilds()[1]
+            c1 = node.getChildren()[0]
+            c2 = node.getChildren()[1]
             if c1.getKind() == AST_NODE.BVAND and c2.getKind() == AST_NODE.BVAND:
                 c1_not    = getNot(c1)
                 c2_not    = getNot(c2)

@@ -2,7 +2,7 @@
 ** Output:
 **
 **  RAX expr: (bvxor ((_ extract 63 0) SymVar_0) (_ bv287454020 64))
-**  constraint: (assert (= (bvxor ((_ extract 63 0) SymVar_0) (_ bv287454020 64)) (_ bv0 64)))
+**  constraint: (= (bvxor ((_ extract 63 0) SymVar_0) (_ bv287454020 64)) (_ bv0 64))
 **  Model:
 **    - Variable id  : 0
 **    - Variable name: SymVar_0
@@ -34,32 +34,36 @@ struct op trace[] = {
 
 int main(int ac, const char **av) {
 
+  triton::API api;
   /* Set the arch */
   api.setArchitecture(ARCH_X86_64);
 
   /* Build an instruction */
   Instruction inst;
 
-  /* Setup opcodes */
-  inst.setOpcodes(trace[0].inst, trace[0].size);
+  /* Setup opcode */
+  inst.setOpcode(trace[0].inst, trace[0].size);
 
   /* Define RAX as symbolic variable */
-  api.convertRegisterToSymbolicVariable(TRITON_X86_REG_RAX);
+  api.convertRegisterToSymbolicVariable(triton::arch::Register(api.getRegister(ID_REG_RAX)));
 
   /* Process everything */
   api.processing(inst);
 
   /* Get the RAX symbolic ID */
-  auto raxSymId = api.getSymbolicRegisterId(TRITON_X86_REG_RAX);
+  auto raxSymId = api.getSymbolicRegisterId(api.getRegister(ID_REG_RAX));
 
   /* Get the RAX full AST */
-  auto raxFullAst = api.getFullAstFromId(raxSymId);
+  auto raxFullAst = api.unrollAstFromId(raxSymId);
 
   /* Display RAX's AST*/
   std::cout << "RAX expr: " << raxFullAst << std::endl;
 
+  /* Get the context to create and ast constraint*/
+  auto& C = api.getAstContext();
+
   /* Modify RAX's AST to build the constraint */
-  auto constraint = ast::assert_(ast::equal(raxFullAst, ast::bv(0, raxFullAst->getBitvectorSize())));
+  auto constraint = C.equal(raxFullAst, C.bv(0, raxFullAst->getBitvectorSize()));
 
   /* Display the AST */
   std::cout << "constraint: " << constraint << std::endl;

@@ -16,6 +16,7 @@
 #include <triton/ast.hpp>
 
 
+
 //! The Triton namespace
 namespace triton {
 /*!
@@ -55,13 +56,12 @@ namespace triton {
           //! AstRepresentation interface.
           triton::ast::representations::AstRepresentationInterface* representations[triton::ast::representations::LAST_REPRESENTATION];
 
-
         public:
           //! Constructor.
           AstRepresentation();
 
           //! Destructor.
-          virtual ~AstRepresentation();
+          ~AstRepresentation();
 
           //! Returns the representation mode.
           triton::uint32 getMode(void) const;

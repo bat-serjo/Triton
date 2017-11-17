@@ -1,7 +1,7 @@
 <p align="center"><img width="50%" src="http://triton.quarkslab.com/files/triton2.png"/></p>
 
 **Triton** is a dynamic binary analysis (DBA) framework. It provides internal components like a Dynamic Symbolic Execution (DSE)
-engine, a Taint Engine, AST representations of the x86 and the x86-64 instructions set semantics, SMT simplification
+engine, a Taint engine, AST representations of the x86 and the x86-64 instructions set semantics, SMT simplification
 passes, an SMT Solver Interface and, the last but not least, Python bindings.
 
 <p align="center">
@@ -25,7 +25,7 @@ A full documentation is available on our [doxygen page](http://triton.quarkslab.
   </a>
   &nbsp;
   <a href="https://codecov.io/gh/JonathanSalwan/Triton">
-    <img src="https://codecov.io/gh/JonathanSalwan/Triton/branch/master/graph/badge.svg" alt="Codecov" />
+    <img src="https://codecov.io/gh/JonathanSalwan/Triton/branch/dev-v0.6/graph/badge.svg" alt="Codecov" />
   </a>
 </p>
 
@@ -40,7 +40,7 @@ A full documentation is available on our [doxygen page](http://triton.quarkslab.
 
 * [Dynamic Symbolic Execution](http://triton.quarkslab.com/documentation/doxygen/engine_DSE_page.html)
 * [Symbolic Execution Optimizations](http://triton.quarkslab.com/documentation/doxygen/py_MODE_page.html)
-* [AST Representations of Semantics](http://triton.quarkslab.com/documentation/doxygen/py_ast_page.html)
+* [AST Representations of Semantics](https://triton.quarkslab.com/documentation/doxygen/py_AstContext_page.html)
 * [SMT Semantics Supported](http://triton.quarkslab.com/documentation/doxygen/SMT_Semantics_Supported_page.html)
 * [SMT Solver Interface](http://triton.quarkslab.com/documentation/doxygen/solver_interface_page.html)
 * [SMT Simplification Passes](http://triton.quarkslab.com/documentation/doxygen/SMT_simplification_page.html)

@@ -1,15 +1,23 @@
 
-from triton     import *
-from triton.ast import *
-from pintool    import *
-
-import sys
-import time
+from triton import OPERAND, SYMEXPR, ARCH, OPCODE
+import pintool as Pintool
+import os
 
 BLUE  = "\033[94m"
 ENDC  = "\033[0m"
 GREEN = "\033[92m"
 RED   = "\033[91m"
+
+# Check if we are on a Travis environment
+Travis = False
+try:
+    if os.environ['TRAVIS']:
+        Travis = True
+except:
+    pass
+
+# Get the Triton context over the pintool
+Triton = Pintool.getTritonContext()
 
 # Output
 #
@@ -31,33 +39,57 @@ RED   = "\033[91m"
 #      Concrete Value : 0000000000000000
 #      Expression     : (ite (= ((_ extract 15 0) #348) ((_ extract 15 0) (_ bv2 64))) (_ bv0 1) (_ bv1 1))
 
-
 def sbefore(instruction):
-    concretizeAllMemory()
-    concretizeAllRegister()
+    Triton.concretizeAllMemory()
+    Triton.concretizeAllRegister()
     return
 
 
 def cafter(instruction):
 
+    ofIgnored = [
+        OPCODE.RCL,
+        OPCODE.RCR,
+        OPCODE.ROL,
+        OPCODE.ROR,
+        OPCODE.SAR,
+        OPCODE.SHL,
+        OPCODE.SHLD,
+        OPCODE.SHR,
+        OPCODE.SHRD,
+    ]
+
     good = True
     bad  = list()
-    regs = getParentRegisters()
+    regs = Triton.getParentRegisters()
 
     for reg in regs:
 
-        cvalue = getCurrentRegisterValue(reg)
-        seid   = getSymbolicRegisterId(reg)
+        cvalue = Pintool.getCurrentRegisterValue(reg)
+        seid   = Triton.getSymbolicRegisterId(reg)
 
         if seid == SYMEXPR.UNSET:
             continue
 
-        expr   = getFullAstFromId(seid)
+        expr   = Triton.unrollAstFromId(seid)
         svalue = expr.evaluate()
-        #svalue = evaluateAstViaZ3(expr)
+        #svalue = Triton.evaluateAstViaZ3(expr)
 
         # Check register
         if cvalue != svalue:
+
+            if reg.getName() == 'of' and instruction.getType() in ofIgnored:
+                continue
+
+            # On processors that do not support TZCNT, the instruction byte
+            # encoding is executed as BSF. The key difference between TZCNT
+            # and BSF instruction is that TZCNT provides operand size as output
+            # when source operand is zero while in the case of BSF instruction,
+            # if source operand is zero, the content of destination operand are
+            # undefined.
+            if instruction.getType() == OPCODE.TZCNT and Travis == True:
+                continue
+
             good = False
             bad.append({
                 'reg':    reg.getName(),
@@ -97,16 +129,15 @@ def cafter(instruction):
         pass
 
     # Reset everything
-    resetEngines()
+    Triton.resetEngines()
 
     return
 
 
 if __name__ == '__main__':
-    setArchitecture(ARCH.X86_64)
-    startAnalysisFromEntry()
-    #startAnalysisFromSymbol('check')
-    insertCall(cafter,  INSERT_POINT.AFTER)
-    insertCall(sbefore, INSERT_POINT.BEFORE_SYMPROC)
-    runProgram()
-
+    Triton.setArchitecture(ARCH.X86_64)
+    Pintool.startAnalysisFromEntry()
+    #Pintool.startAnalysisFromSymbol('check')
+    Pintool.insertCall(cafter,  Pintool.INSERT_POINT.AFTER)
+    Pintool.insertCall(sbefore, Pintool.INSERT_POINT.BEFORE_SYMPROC)
+    Pintool.runProgram()

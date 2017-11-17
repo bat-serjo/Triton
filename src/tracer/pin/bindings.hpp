@@ -8,16 +8,16 @@
 #ifndef TRITON_PIN_PYTHONBINDINGS_H
 #define TRITON_PIN_PYTHONBINDINGS_H
 
+/* libTriton */
+#include <triton/pythonBindings.hpp>
+#include <triton/api.hpp>
+#include <triton/tritonTypes.hpp>
+
 #include <map>
 #include <set>
 #include <list>
 
-#include <python2.7/Python.h>
 #include <pin.H>
-
-/* libTriton */
-#include <triton/api.hpp>
-#include <triton/tritonTypes.hpp>
 
 /* pintool */
 #include "snapshot.hpp"
@@ -53,7 +53,7 @@ namespace tracer {
     bool execScript(const char* fileName);
 
     //! The initialization of the Pin's Python env.
-    void initBindings(void);
+    void initBindings(int argc, char* argv[]);
 
     //! The Options namespace
     namespace options {
