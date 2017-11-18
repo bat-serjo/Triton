@@ -581,10 +581,6 @@ namespace triton {
         if (this->modes.isModeEnabled(triton::modes::ALIGNED_MEMORY))
           this->addAlignedMemory(memAddr, symVarSize, symVarNode);
 
-        /* Record the aligned symbolic variable for a symbolic optimization */
-        if (this->modes->isModeEnabled(triton::modes::ALIGNED_MEMORY))
-          this->addAlignedMemory(memAddr, symVarSize, symVarNode);
-
         /*  Split expression in bytes */
         for (triton::sint32 index = symVarSize-1; index >= 0; index--) {
 

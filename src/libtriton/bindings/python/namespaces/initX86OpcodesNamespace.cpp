@@ -7,7 +7,6 @@
 
 #include <triton/pythonBindings.hpp>
 #include <triton/pythonUtils.hpp>
-#include <triton/api.hpp>
 #include <triton/x86Specifications.hpp>
 
 

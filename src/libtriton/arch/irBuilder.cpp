@@ -148,8 +148,6 @@ namespace triton {
 
       // ----------------------------------------------------------------------
 
-      // ----------------------------------------------------------------------
-
       /*
        * If the symbolic engine is defined to process symbolic
        * execution only on symbolized expressions, we delete all

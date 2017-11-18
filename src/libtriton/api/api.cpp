@@ -221,7 +221,8 @@ namespace triton {
 
 
   triton::arch::CpuInterface* API::getCpu(void) {
-    this->checkArchitecture();
+    if (!this->isArchitectureValid())
+      throw triton::exceptions::API("API::checkArchitecture(): You must define an architecture.");
     return this->arch.getCpu();
   }
 
